@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+// SETTING UP DATABASE SCHEMA
+model User {
+    id                          String            @id @default(uuid())
+    email                       String            @unique
+    createdAt                   DateTime          @default(now())
+    updatedAt                   DateTime          @updatedAt
+    orders                      Order[]
+}
+
+model Product {
+    id                          String          @id @default(uuid())
+    name                        String
+    priceInCents                Int
+    filePath                    String
+    imagePath                   String
+    description                 String
+    isAvailableForPurchase      Boolean         @default(true)   
+    createdAt                   DateTime        @default(now())
+    updatedAt                   DateTime        @updatedAt
+    orders                      Order[]
+    downloadVerifications       DownloadVerification[]
+}
+
+
+model Order {
+    id                          String            @id @default(uuid())
+    pricePaidInCents            Int
+    createdAt                   DateTime          @default(now())
+    updatedAt                   DateTime          @updatedAt
+    userId                      String
+    productId                   String
+    // usedId  references id  from the User table (key)
+    // onDelete of User, all Orders associated with User will also be deleted
+    user                        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+    // Restrict doesn't allow you to delete a product with an Order(s)
+    product                     Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
+}
+
+model DownloadVerification {
+    id                          String            @id @default(uuid())
+    createdAt                   DateTime          @default(now())
+    expiresAt                   DateTime
+    productId                   String
+    // If a product is deleted, all associated download links will be deleted as well
+    product                     Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
