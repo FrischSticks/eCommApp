@@ -1,6 +1,9 @@
 import { ReactNode } from 'react';
 import { Nav, NavLink } from "@/components/Nav"
 
+// FORCES NEXT JS NOT TO CACHE ADMIN PAGES
+export const dynamic = 'force-dynamic'
+
 export default function AdminLayout({
   children,
 }: {
