@@ -6,12 +6,13 @@ import { useState } from "react"
 import { formatCurrency } from "@/lib/formatters"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { addProduct } from "../../_actions/products"
 
 export function ProductForm() {
 
     const [priceInCents, setPriceInCents] = useState<number>()
 
-    return <form className="space-y-8">
+    return <form action={addProduct} className="space-y-8">
         <div className="space-y-2">
             <Label  htmlFor="name"> Name </Label>
             {/* id is used for htmlFor & name is used for action */}
@@ -48,6 +49,6 @@ export function ProductForm() {
             <Input type="file" id="img" name="img" required />
         </div>
 
-        <Button type="submit"> Save </Button>
+        <Button type="submit"> Save Product </Button>
     </form>
 }
