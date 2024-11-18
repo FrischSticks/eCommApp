@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import db from '@/db/prisma'
+import { formatCurrency, formatNumber } from '@/lib/formatters';
 
 async function getSalesData() {
     const data = await db.order.aggregate({
@@ -16,14 +17,45 @@ async function getSalesData() {
     }
 }
 
+async function getUserData() {
+    const [ userCount, orderData ] = await Promise.all([
+        db.user.count(),
+        db.order.aggregate({
+            _sum: { pricePaidInCents: true }
+        })
+    ])
+
+    return {
+        userCount,
+        averageValuePerUser: userCount === 0 ? 0: (orderData._sum.pricePaidInCents || 0) / 100 / userCount
+    }
+}
+
 export default async function AdminDashboard() {
-    const salesData = await getSalesData()
+    const [ salesData, userData] = await Promise.all([
+        getSalesData(),
+        getUserData()
+    ])
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <DashboardCard title="Sales" subtitle={salesData.numberOfSales} body={salesData.revenue} />
-            <DashboardCard title="Sales" subtitle="Subtitle" body="Body" />
-            <DashboardCard title="Sales" subtitle="Subtitle" body="Body" />
+            <DashboardCard 
+                title= "Sales" 
+                subtitle= {`${formatNumber(salesData.numberOfSales)}  Orders`}
+                body= {formatCurrency(salesData.revenue)} 
+            />
+
+            <DashboardCard 
+                title= "Customers" 
+                subtitle= {`Average Value: ${formatCurrency(userData.averageValuePerUser)}`} 
+                body= {formatNumber(userData.userCount)}
+            />
+
+            <DashboardCard 
+                title= "Title" 
+                subtitle= "Subtitle" 
+                body= "Body"
+            />
         </div>
     );
 }
