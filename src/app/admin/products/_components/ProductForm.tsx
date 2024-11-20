@@ -10,9 +10,13 @@ import { addProduct } from "../../_actions/products"
 
 export function ProductForm() {
 
-    const [priceInCents, setPriceInCents] = useState<number>()
+    const [priceInCents, setPriceInCents] = useState<number>(0)
 
-    return <form action={addProduct} className="space-y-8">
+    return <form action={async (formData) => {
+        await addProduct(formData); // Ensure addProduct returns Promise<void>
+    }}
+    className="space-y-8"
+>
         <div className="space-y-2">
             <Label  htmlFor="name"> Name </Label>
             {/* id is used for htmlFor & name is used for action */}
@@ -26,8 +30,8 @@ export function ProductForm() {
                 id="priceInCents" 
                 name="priceInCents" 
                 required 
-                value={ priceInCents }
-                onChange={ e => setPriceInCents(Number(e.target.value) || undefined )}
+                value={ priceInCents || 0 }
+                onChange={ e => setPriceInCents(Number(e.target.value) || 0 )}
             />
             <div className="text-muted-foreground">
                 { formatCurrency((priceInCents || 0) / 100) }
