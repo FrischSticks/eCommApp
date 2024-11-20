@@ -33,18 +33,14 @@ export async function addProduct(formData: FormData) {
 
     // SAVING IMAGE AND FILE TO USABLE FILE PATH W/ FS
     // Make Directory
-    await fs.mkdir('/products', { recursive: true })
+    await fs.mkdir('public/products', { recursive: true })
     // Create File Path to Directory w/ random ID
-    const filePath = `/products/${crypto.randomUUID()}-${data.file.name}`
+    const filePath = `public/products/${crypto.randomUUID()}-${data.file.name}`
     // Save File to File Path by Converting w/ Buffer to a format Node JS can read
     await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()))
 
-    // Make Directory
-    await fs.mkdir('/products', { recursive: true })
-    // Create File Path to Directory w/ random ID
-    const imagePath = `/products/${crypto.randomUUID()}-${data.img.name}`
-    // Save Img to File Path by Converting w/ Buffer to a format Node JS can read
-    await fs.writeFile(`${imagePath}`, Buffer.from(await data.img.arrayBuffer()))
+    const imagePath = `public/products/${crypto.randomUUID()}-${data.img.name}`
+    await fs.writeFile(imagePath, Buffer.from(await data.img.arrayBuffer()))
 
     await db.product.create({ data: {
         name: data.name,
@@ -53,6 +49,6 @@ export async function addProduct(formData: FormData) {
         filePath,
         imagePath,
     }})
-
+    
     redirect('/admin/products')
 }
