@@ -52,3 +52,8 @@ export async function addProduct(formData: FormData) {
     
     redirect('/admin/products')
 }
+
+// Database: The products are being saved to your Prisma database, which you can view using Prisma Studio or direct database queries.
+// Run "npx prisma studio" to view
+
+// File System: The product files and images are saved to the server's file system, but to ensure they are publicly accessible, they are also saved in the public/products directory.
