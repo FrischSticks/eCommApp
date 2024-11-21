@@ -1,10 +1,11 @@
-import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuContent } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { PageHeader } from "../_components/PageHeader"
 import { Table, TableHead, TableHeader, TableRow, TableBody, TableCell } from "@/components/ui/table";
 import db from "@/db/prisma"
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import { CheckCircle2, MoreVertical, XCircleIcon } from "lucide-react";
 import Link from "next/link";
+import { ActiveToggleDropdownItem, DeleteDropdownItem} from '../products/_components/ProductForm'
 
 
 export default function AdminProductsPage() {
@@ -85,6 +86,9 @@ async function ProductsTable() {
                                 <DropdownMenuItem>
                                     <Link href={`/admin/products/${product.id}/edit`}> Edit </Link>
                                 </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <ActiveToggleDropdownItem id={product.id} isAvailableForPurchase={product.isAvailableForPurchase} />
+                                <DeleteDropdownItem id={product.id} disabled={product._count.orders > 0}/>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </TableCell>

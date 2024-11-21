@@ -2,11 +2,47 @@
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { formatCurrency } from "@/lib/formatters";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { addProduct } from "../../_actions/products";
+import { addProduct, deleteProduct, toggleProductAvailability } from "../../_actions/products";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+
+export function ActiveToggleDropdownItem({
+  id,
+  isAvailableForPurchase
+}: {
+  id: string,
+  isAvailableForPurchase: boolean
+}) {
+  const [isPending, startTransition] = useTransition()
+  return <DropdownMenuItem
+    disabled= {isPending}
+    onClick={() => {
+      startTransition(async () => {
+        await toggleProductAvailability(id, !isAvailableForPurchase)
+      })
+    }}> { isAvailableForPurchase ? "Deactivate" : "Activate"} </DropdownMenuItem>
+}
+
+export function DeleteDropdownItem({
+  id,
+  disabled
+}: {
+  id: string,
+  disabled: boolean
+}) {
+  const [isPending, startTransition] = useTransition()
+  return <DropdownMenuItem
+    variant="destructive"
+    disabled= {disabled || isPending}
+    onClick={() => {
+      startTransition(async () => {
+        await deleteProduct(id)
+      })
+    }}> Delete </DropdownMenuItem>
+}
 
 export function ProductForm() {
   const [priceInCents, setPriceInCents] = useState<number>(0);
