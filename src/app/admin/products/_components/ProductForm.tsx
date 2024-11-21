@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { addProduct, deleteProduct, toggleProductAvailability } from "../../_actions/products";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 export function ActiveToggleDropdownItem({
   id,
@@ -16,12 +17,14 @@ export function ActiveToggleDropdownItem({
   id: string,
   isAvailableForPurchase: boolean
 }) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   return <DropdownMenuItem
     disabled= {isPending}
     onClick={() => {
       startTransition(async () => {
         await toggleProductAvailability(id, !isAvailableForPurchase)
+        router.refresh()
       })
     }}> { isAvailableForPurchase ? "Deactivate" : "Activate"} </DropdownMenuItem>
 }
@@ -33,6 +36,7 @@ export function DeleteDropdownItem({
   id: string,
   disabled: boolean
 }) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   return <DropdownMenuItem
     variant="destructive"
@@ -40,6 +44,7 @@ export function DeleteDropdownItem({
     onClick={() => {
       startTransition(async () => {
         await deleteProduct(id)
+        router.refresh()
       })
     }}> Delete </DropdownMenuItem>
 }
