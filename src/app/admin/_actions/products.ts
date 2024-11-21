@@ -62,6 +62,9 @@ export async function toggleProductAvailability(id: string, isAvailableForPurcha
 export async function deleteProduct(id: string) {
     const product = await db.product.delete({where: {id}})
     if (product === null) return notFound()
+
+    await fs.unlink(product.filePath)
+    await fs.unlink(`${product.imagePath}`)
 }
 // Database: The products are being saved to your Prisma database, which you can view using Prisma Studio or direct database queries.
 // Run "npx prisma studio" to view
