@@ -11,6 +11,7 @@ const fileSchema = z.instanceof(File, { message: "File Required" })
 const imgSchema = fileSchema.refine( file => file.size  === 0 || file.type.startsWith("image/") )
 
 const addSchema = z.object({
+
     // Min Length of 1
     name: z.string().min(1),
     description: z.string().min(1),
@@ -48,6 +49,7 @@ export async function addProduct(formData: FormData) {
         priceInCents: data.priceInCents,
         filePath,
         imagePath,
+        isAvailableForPurchase: false
     }})
     
     redirect('/admin/products')
