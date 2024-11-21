@@ -1,5 +1,8 @@
 import { PageHeader } from "../_components/PageHeader"
-import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableHead, TableHeader, TableRow, TableBody, TableCell } from "@/components/ui/table";
+import db from "@/db/prisma"
+import { formatCurrency, formatNumber } from "@/lib/formatters";
+import { CheckCircle2, MoreVertical, XCircle, XCircleIcon } from "lucide-react";
 
 
 export default function AdminProductsPage() {
@@ -16,7 +19,22 @@ export default function AdminProductsPage() {
         </>);
 }
 
-function ProductsTable() {
+async function ProductsTable() {
+
+    // Pulling Product Data from DB
+    const products = await db.product.findMany({
+        select: {
+            id: true, 
+            name: true, 
+            priceInCents: true, 
+            isAvailableForPurchase: true, 
+            _count: { select: {orders: true }}
+        },
+        orderBy: { name: "asc"}
+    })
+
+    if (products.length === 0) return <p> No Products </p>
+
     return <Table>
         <TableHeader>
             <TableRow>
@@ -31,9 +49,32 @@ function ProductsTable() {
                 </TableHead>
             </TableRow>
         </TableHeader>
-
-        {/* <TableBody>
-
-        </TableBody> */}
+        <TableBody>
+            {/* LOOP THROUGH PRODUCTS */}
+            {products.map(product => (
+                <TableRow key={product.id}>
+                    <TableCell>
+                        { product.isAvailableForPurchase ? (
+                            <>
+                                <CheckCircle2 />
+                                <span className="sr-only"> Available </span>
+                            </>
+                        ) : (
+                            <>
+                                <XCircleIcon />
+                                <span className="sr-only"> Unavailable </span>
+                            </>
+                        )}
+                    </TableCell>
+                    <TableCell> {product.name} </TableCell>
+                    <TableCell> {formatCurrency(product.priceInCents / 100)} </TableCell>
+                    <TableCell> {formatNumber(product._count.orders)} </TableCell>
+                    <TableCell>  
+                        <MoreVertical/>
+                        <span className="sr-only"> Actions </span>
+                    </TableCell>
+                </TableRow>
+            ))}
+        </TableBody>
     </Table>
 }
