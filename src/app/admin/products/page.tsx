@@ -1,8 +1,10 @@
+import { DropdownMenu, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuContent } from "@/components/ui/dropdown-menu";
 import { PageHeader } from "../_components/PageHeader"
 import { Table, TableHead, TableHeader, TableRow, TableBody, TableCell } from "@/components/ui/table";
 import db from "@/db/prisma"
 import { formatCurrency, formatNumber } from "@/lib/formatters";
-import { CheckCircle2, MoreVertical, XCircle, XCircleIcon } from "lucide-react";
+import { CheckCircle2, MoreVertical, XCircleIcon } from "lucide-react";
+import Link from "next/link";
 
 
 export default function AdminProductsPage() {
@@ -69,9 +71,22 @@ async function ProductsTable() {
                     <TableCell> {product.name} </TableCell>
                     <TableCell> {formatCurrency(product.priceInCents / 100)} </TableCell>
                     <TableCell> {formatNumber(product._count.orders)} </TableCell>
-                    <TableCell>  
-                        <MoreVertical/>
-                        <span className="sr-only"> Actions </span>
+                    <TableCell> 
+                        <DropdownMenu>
+                            {/* Trigger Acts as Btn */}
+                            <DropdownMenuTrigger>
+                                <MoreVertical/>
+                                <span className="sr-only"> Actions </span>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem>
+                                    <a download href={`/admin/products/${product.id}/download`}> Download </a>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <Link href={`/admin/products/${product.id}/edit`}> Edit </Link>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </TableCell>
                 </TableRow>
             ))}
