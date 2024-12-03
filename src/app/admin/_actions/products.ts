@@ -1,71 +1,136 @@
 "use server"
 
-import { z } from "zod"
-import fs from 'fs/promises'
-import { notFound, redirect } from "next/navigation"
 import db from "@/db/prisma"
+import { z } from "zod"
+import fs from "fs/promises"
+import { notFound, redirect } from "next/navigation"
+import { revalidatePath } from "next/cache"
 
-// Creating fileSchema & imageSchema, because Zod is not equipped to validate files
-const fileSchema = z.instanceof(File, { message: "File Required" })
-// If file size = 0, then the validation will not run
-const imgSchema = fileSchema.refine( file => file.size  === 0 || file.type.startsWith("image/") )
+const fileSchema = z.instanceof(File, { message: "Required" })
+const imageSchema = fileSchema.refine(
+  file => file.size === 0 || file.type.startsWith("image/")
+)
 
 const addSchema = z.object({
-
-    // Min Length of 1
-    name: z.string().min(1),
-    description: z.string().min(1),
-    // Zod will try to handle the String (from Form) and Coerce it to a Number
-    priceInCents: z.coerce.number().int().min(1),
-    // Validates that the file is not empty, by confirming size > 0
-    file: fileSchema.refine(file => file.size > 0, "File Required"),
-    img: imgSchema.refine(file => file.size > 0, "File Required")
+  name: z.string().min(1),
+  description: z.string().min(1),
+  priceInCents: z.coerce.number().int().min(1),
+  file: fileSchema.refine(file => file.size > 0, "Required"),
+  image: imageSchema.refine(file => file.size > 0, "Required"),
 })
 
-export async function addProduct(formData: FormData) {
-    // Converts formData to usable Object then Parses
-    const result = addSchema.safeParse(Object.fromEntries(formData.entries()))
+export async function addProduct(prevState: unknown, formData: FormData) {
+  const result = addSchema.safeParse(Object.fromEntries(formData.entries()))
+  if (result.success === false) {
+    return result.error.formErrors.fieldErrors
+  }
 
-    if ( result.success === false ) {
-        return result.error.formErrors.fieldErrors
-    }
+  const data = result.data
 
-    const data = result.data
+  await fs.mkdir("products", { recursive: true })
+  const filePath = `products/${crypto.randomUUID()}-${data.file.name}`
+  await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()))
 
-    // SAVING IMAGE AND FILE TO USABLE FILE PATH W/ FS
-    // Make Directory
-    await fs.mkdir('public/products', { recursive: true })
-    // Create File Path to Directory w/ random ID
-    const filePath = `public/products/${crypto.randomUUID()}-${data.file.name}`
-    // Save File to File Path by Converting w/ Buffer to a format Node JS can read
-    await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()))
+  await fs.mkdir("public/products", { recursive: true })
+  const imagePath = `/products/${crypto.randomUUID()}-${data.image.name}`
+  await fs.writeFile(
+    `public${imagePath}`,
+    Buffer.from(await data.image.arrayBuffer())
+  )
 
-    const imagePath = `public/products/${crypto.randomUUID()}-${data.img.name}`
-    await fs.writeFile(imagePath, Buffer.from(await data.img.arrayBuffer()))
+  await db.product.create({
+    data: {
+      isAvailableForPurchase: false,
+      name: data.name,
+      description: data.description,
+      priceInCents: data.priceInCents,
+      filePath,
+      imagePath,
+    },
+  })
 
-    await db.product.create({ data: {
-        name: data.name,
-        description: data.description,
-        priceInCents: data.priceInCents,
-        filePath,
-        imagePath,
-        isAvailableForPurchase: false
-    }})
-    
-    redirect('/admin/products')
+  revalidatePath("/")
+  revalidatePath("/products")
+
+  redirect("/admin/products")
 }
 
-export async function toggleProductAvailability(id: string, isAvailableForPurchase: boolean) {
-    await db.product.update({ where: {id}, data: {isAvailableForPurchase}})
+const editSchema = addSchema.extend({
+  file: fileSchema.optional(),
+  image: imageSchema.optional(),
+})
+
+export async function updateProduct(
+  id: string,
+  prevState: unknown,
+  formData: FormData
+) {
+  const result = editSchema.safeParse(Object.fromEntries(formData.entries()))
+  if (result.success === false) {
+    return result.error.formErrors.fieldErrors
+  }
+
+  const data = result.data
+  const product = await db.product.findUnique({ where: { id } })
+
+  if (product == null) return notFound()
+
+  let filePath = product.filePath
+  if (data.file != null && data.file.size > 0) {
+    await fs.unlink(product.filePath)
+    filePath = `products/${crypto.randomUUID()}-${data.file.name}`
+    await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()))
+  }
+
+  let imagePath = product.imagePath
+  if (data.image != null && data.image.size > 0) {
+    await fs.unlink(`public${product.imagePath}`)
+    imagePath = `/products/${crypto.randomUUID()}-${data.image.name}`
+    await fs.writeFile(
+      `public${imagePath}`,
+      Buffer.from(await data.image.arrayBuffer())
+    )
+  }
+
+  await db.product.update({
+    where: { id },
+    data: {
+      name: data.name,
+      description: data.description,
+      priceInCents: data.priceInCents,
+      filePath,
+      imagePath,
+    },
+  })
+
+  revalidatePath("/")
+  revalidatePath("/products")
+
+  redirect("/admin/products")
+}
+
+export async function toggleProductAvailability(
+  id: string,
+  isAvailableForPurchase: boolean
+) {
+  await db.product.update({ where: { id }, data: { isAvailableForPurchase } })
+
+  revalidatePath("/")
+  revalidatePath("/products")
 }
 
 export async function deleteProduct(id: string) {
-    const product = await db.product.delete({where: {id}})
-    if (product === null) return notFound()
+  const product = await db.product.delete({ where: { id } })
 
-    await fs.unlink(product.filePath)
-    await fs.unlink(`${product.imagePath}`)
+  if (product == null) return notFound()
+
+  await fs.unlink(product.filePath)
+  await fs.unlink(`public${product.imagePath}`)
+
+  revalidatePath("/")
+  revalidatePath("/products")
 }
+
 // Database: The products are being saved to your Prisma database, which you can view using Prisma Studio or direct database queries.
 // Run "npx prisma studio" to view
 

@@ -5,7 +5,7 @@ import db from "@/db/prisma"
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import { CheckCircle2, MoreVertical, XCircleIcon } from "lucide-react";
 import Link from "next/link";
-import { ActiveToggleDropdownItem, DeleteDropdownItem} from '../products/_components/ProductForm'
+import { ActiveToggleDropdownItem, DeleteDropdownItem} from '../products/_components/ProductActions'
 
 
 export default function AdminProductsPage() {
