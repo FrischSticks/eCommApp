@@ -3,6 +3,7 @@ import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { Suspense } from "react";
 import { cache } from "@/lib/cache";
 
+// Revalidation done within admin/_actions, because this is the only time products change!
 const getProducts = cache(() => {
     return db.product.findMany({ 
         where: { isAvailableForPurchase: true }, 
