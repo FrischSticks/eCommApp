@@ -5,25 +5,29 @@ import { Product } from "@prisma/client";
 import Link from "next/link"
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { Suspense } from "react";
+import { cache } from "@/lib/cache";
 
 
 // Fetch the Top-Selling Products
-async function getTopSellingProducts() {
+// Make function a variable & use custom cache function as => 
+const getTopSellingProducts = cache(() => {
     return db.product.findMany({
         where: { isAvailableForPurchase: true },
         orderBy: { orders: { _count: "desc" } },
         take: 6,
     });
-}
+    // Passing [] for keyParts (MUST BE UNIQUE!)
+    // Revalidates data once a day
+}, ["/", "getMostPopularProducts"], { revalidate: 60 *  60 * 24 })
 
 // Fetch the Newest Products
-async function getNewestProducts() {
+const getNewestProducts = cache(() => {
     return db.product.findMany({
         where: { isAvailableForPurchase: true },
         orderBy: { orders: { _count: "desc" } },
         take: 6,
-      })
-}
+      });
+}, ["/", "getNewestProducts"], { revalidate: 60 *  60 * 24 })
 
 export default function HomePage() {
   return (
