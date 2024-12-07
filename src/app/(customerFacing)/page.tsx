@@ -62,6 +62,8 @@ function ProductGridSection({
           fallback={
             <>
               <ProductCardSkeleton />
+              <ProductCardSkeleton />
+              <ProductCardSkeleton />
             </>
           }
         >
