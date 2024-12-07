@@ -1,13 +1,15 @@
 import db from "@/db/prisma";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { Suspense } from "react";
+import { cache } from "@/lib/cache";
 
-function getProducts() {
+// Revalidation done within admin/_actions, because this is the only time products change!
+const getProducts = cache(() => {
     return db.product.findMany({ 
         where: { isAvailableForPurchase: true }, 
         orderBy: { name: "asc" }
     })
-}
+}, ["/products", "getProducts"])
 
 async function ProductSuspense() {
     const products = await getProducts()
