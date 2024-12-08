@@ -6,6 +6,7 @@ import { formatCurrency } from "@/lib/formatters"
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js"
 import Image from "next/image"
+import { FormEvent, useState } from "react"
 
 type CheckoutFormProps = {
     product: {
@@ -43,21 +44,48 @@ export function CheckoutForm({ product, clientSecret } : CheckoutFormProps ) {
 function Form( {priceInCents} : {priceInCents: number} ) {
     const stripe = useStripe()
     const elements = useElements()
+    const [isLoading, setIsLoading] = useState(false)
+    const [errorMessage, setErrorMessage] = useState<string>()
+
+    function handleSubmit(e: FormEvent) {
+        e.preventDefault()
+
+        if (stripe == null || elements == null) return
+        setIsLoading(true)
+
+        // Check for Existing Order, No Duplicate Orders!
+
+        stripe.confirmPayment({ 
+            elements,
+            // Payment Success Page
+            confirmParams: { return_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/stripe/purchase-success`}
+        // .then will only run if payment is unsuccessful
+        }).then(({ error }) => {
+            // Only Include Error Codes Decipherable to Average Individual (Not Devs)
+            if (error.type === "card_error" || error.type === "validation_error") {
+                setErrorMessage(error.message)
+            } else {
+                setErrorMessage("ERROR: Unable to Process Payment")
+            }
+        }).finally(() => setIsLoading(false))
+    }
 
     return (
-        <form>
+        <form onSubmit={ handleSubmit }>
             <Card>
                 <CardHeader>
                     <CardTitle> Checkout </CardTitle>
-                    {/* CONTAINER FOR ERROR MESSAGES */}
-                    <CardDescription className="text-destructive"> ERROR </CardDescription>
+                    {/* CONTAINER FOR ERROR MESSAGES IF ERROR EXISTS */}
+                    { errorMessage && (
+                        <CardDescription className="text-destructive"> {errorMessage} </CardDescription> 
+                    )}
                 </CardHeader>
                 <CardContent>
                     <PaymentElement />
                 </CardContent>
                 <CardFooter>
-                    <Button className="w-full" size="lg" disabled={ stripe == null || elements == null } > 
-                        Purchase - {formatCurrency(priceInCents / 100)} 
+                    <Button className="w-full" size="lg" disabled={ stripe == null || elements == null || isLoading } > 
+                        {isLoading ? "Purchasing. . ." : `Purchase - ${formatCurrency(priceInCents / 100)}`}
                     </Button>
                 </CardFooter>
             </Card>
