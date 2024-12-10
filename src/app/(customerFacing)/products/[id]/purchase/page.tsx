@@ -5,16 +5,21 @@ import { CheckoutForm } from "./_components/CheckoutForm"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
 
-export default async function PurchasePage({ 
-    params: { id }
-} : {
-    params: { id: string }
-}) {
+export default async function PurchasePage(
+    props: {
+        params: Promise<{ id: string }>
+    }
+) {
+    const params = await props.params;
+
+    const {
+        id
+    } = params;
 
     const product = await db.product.findUnique({ 
         where: { id } })
     if (product == null ) return notFound()
-    
+
     // Create Stripe Payment Intent
     const paymentIntent = await stripe.paymentIntents.create({
         amount: product.priceInCents,
