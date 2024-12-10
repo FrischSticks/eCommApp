@@ -22,18 +22,22 @@ export default async function SuccessfulPurchasePage({
     const product = await db.product.findUnique({where: {id: paymentIntent.metadata.productId }})
     if (product == null) return notFound()
 
+    // Determine Successful Purchase vs Error (boolean)
+    const isSuccess = paymentIntent.status === "succeeded"
+
     return (
         <div className="max-w-5xl w-full mx-auto space-y-8">
-        <div className="flex gap-4 items-center">
-            <div className="aspect-video flex-shrink-0 w-1/3 relative">
-                <Image src={product.imagePath} fill alt={product.name} className="object-cover" />
-            </div>
-            <div>
-                <div className="text-lg"> {formatCurrency(product.priceInCents / 100)} </div>
-                <h1 className="text-2xl font-bold"> { product.name } </h1>
-                <div className="line-clamp-3 text-muted-foreground"> { product.description } </div>
+            <h1 className="text-3xl font-bold">{ isSuccess ? "Purchase Successful" : "Error Purchasing" }</h1>
+            <div className="flex gap-4 items-center">
+                <div className="aspect-video flex-shrink-0 w-1/3 relative">
+                    <Image src={product.imagePath} fill alt={product.name} className="object-cover" />
+                </div>
+                <div>
+                    <div className="text-lg"> {formatCurrency(product.priceInCents / 100)} </div>
+                        <h1 className="text-2xl font-bold"> { product.name } </h1>
+                    <div className="line-clamp-3 text-muted-foreground"> { product.description } </div>
+                </div>
             </div>
         </div>
-    </div>
     )
 }
