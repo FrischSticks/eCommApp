@@ -17,6 +17,7 @@
     "@stripe/stripe-js": "^5.2.0",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
+    "cli": "^1.0.1",
     "clsx": "^2.1.1",
     "fs": "^0.0.1-security",
     "lucide-react": "^0.459.0",
