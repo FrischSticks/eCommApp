@@ -43,7 +43,7 @@ export default async function SuccessfulPurchasePage({
                     <Button className="mt-4" size="lg" asChild>
                         {isSuccess ? (
                             // Contains Download w/ Verification Link (Limited Time Download)
-                            <a></a>
+                            <a href={`/products/download/${await createDownloadVerification(product.id)}`}> Download </a>
                          ) : (
                             // Links back to Purchase Page if Unsuccessful Purchase
                             <Link href={`/products/${product.id}/purchase`}> Try Again </Link>
@@ -53,4 +53,12 @@ export default async function SuccessfulPurchasePage({
             </div>
         </div>
     )
+}
+
+async function createDownloadVerification(productId: string) {
+    return (await db.downloadVerification.create({ 
+        // Expiration Date is 24hr After Purchase (Math is for milliseconds in Day)
+        data: { productId, expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24)}})
+    // Returns only the id
+    ).id
 }
