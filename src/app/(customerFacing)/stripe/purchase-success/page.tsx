@@ -1,6 +1,8 @@
+import { Button } from "@/components/ui/button";
 import db from "@/db/prisma";
 import { formatCurrency } from "@/lib/formatters";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import Stripe from "stripe";
 
@@ -34,8 +36,19 @@ export default async function SuccessfulPurchasePage({
                 </div>
                 <div>
                     <div className="text-lg"> {formatCurrency(product.priceInCents / 100)} </div>
-                        <h1 className="text-2xl font-bold"> { product.name } </h1>
+                    <h1 className="text-2xl font-bold"> { product.name } </h1>
                     <div className="line-clamp-3 text-muted-foreground"> { product.description } </div>
+                    {/* Button to Download File */}
+                    {/* asChild, because it is a Link */}
+                    <Button className="mt-4" size="lg" asChild>
+                        {isSuccess ? (
+                            // Contains Download w/ Verification Link (Limited Time Download)
+                            <a></a>
+                         ) : (
+                            // Links back to Purchase Page if Unsuccessful Purchase
+                            <Link href={`/products/${product.id}/purchase`}> Try Again </Link>
+                        )}
+                    </Button>
                 </div>
             </div>
         </div>
