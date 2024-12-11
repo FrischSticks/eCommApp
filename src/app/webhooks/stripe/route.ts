@@ -20,10 +20,26 @@ export async function POST(req: NextRequest) {
 
         const productId = charge.metadata.productId
         const email = charge.billing_details.email
-        const priceInCents = charge.amount
+        const pricePaidInCents = charge.amount
 
         // Ensure Product Exists
         const product = await db.product.findUnique({ where: { id: productId}})
         if ( product == null || email == null ) return new NextResponse("Bad Request", {status: 400})
+
+        // Create or Update User by Adding Order (Prisma upsert)
+const userWithOrder = await db.user.upsert({
+    where: { email },
+    create: {
+        email,
+        orders: { create: { productId, pricePaidInCents } }
+    },
+    update: {
+        orders: { create: { productId, pricePaidInCents } }
+    },
+    select: {
+        orders: { orderBy: { createdAt: "desc" }, take: 1 }
+    }
+        })
+
     }
 }
