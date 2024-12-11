@@ -4,6 +4,7 @@ import Stripe from "stripe"
 import { CheckoutForm } from "./_components/CheckoutForm"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
+console.log(stripe)
 
 export default async function PurchasePage(
     props: {

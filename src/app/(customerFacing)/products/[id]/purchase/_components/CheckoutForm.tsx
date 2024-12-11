@@ -23,6 +23,7 @@ type CheckoutFormProps = {
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string)
 
 export function CheckoutForm({ product, clientSecret } : CheckoutFormProps ) {
+    console.log("Client Secret:", clientSecret);
     // Use Elements like a Conext Wrapper & Add Components
     // Add appearance as option to Customize
     return (
