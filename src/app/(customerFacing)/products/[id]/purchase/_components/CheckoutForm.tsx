@@ -63,6 +63,7 @@ function Form( {priceInCents, productId} : {priceInCents: number, productId: str
         if ( orderExists ) {
             setErrorMessage("You have already purchased this product! Try downloading it from the My Orders page.")
             setIsLoading(false)
+            return
         }
         
 
