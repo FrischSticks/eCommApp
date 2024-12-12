@@ -8,6 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
 
 // npm i resend & react-email (made by same team - work well together!)
 const resend = new Resend(process.env.RESEND_API_KEY as string)
+console.log(process.env.RESEND_API_KEY)
 
 // Called By Stripe - Gives Info from Body
 export async function POST(req: NextRequest) {
@@ -57,8 +58,9 @@ export async function POST(req: NextRequest) {
             }
         })
 
+        // NOTE: Will not work in dev environment!
         await resend.emails.send({
-            from: `Support <${process.env.RESEND_EMAIL}>`,
+            from: `Support <${process.env.SENDER_EMAIL}>`,
             to: email,
             subject: "Order Confirmation",
             react: <h1>Confirmation Email</h1>
@@ -68,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     }
 
-
+    // HANDLING ALL EVENTS TO RESOLVE ERRORS
     if (event.type === "payment_intent.succeeded") {
         return new NextResponse("Payment Intent Succeeded")
     }
