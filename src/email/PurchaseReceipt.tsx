@@ -4,6 +4,8 @@ import { OrderInformation } from "./components/OrderInformation";
 type PurchaseReceiptEmailProps = {
     product: {
         name: string
+        imagePath: string
+        description: string
     }
     order: { 
         id: string,
@@ -14,7 +16,11 @@ type PurchaseReceiptEmailProps = {
 }
 
 PurchaseReceiptEmail.PreviewProps = {
-    product: { name: "Product Name"},
+    product: { 
+        name: "Product Name",
+        description: "Description",
+        imagePath: "/products/13c88e02-6509-4432-bdb5-e328bc8968a5-FanDuel.png"
+    },
     order: {
         id: crypto.randomUUID(),
         createdAt: new Date(),
