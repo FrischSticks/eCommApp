@@ -1,5 +1,5 @@
 import { formatCurrency } from "@/lib/formatters"
-import { Column, Img, Row, Section, Text } from "@react-email/components"
+import { Button, Column, Img, Row, Section, Text } from "@react-email/components"
 
 type OrderInformationProps = {
     order: { 
@@ -49,6 +49,12 @@ export function OrderInformation({
             <Row className="mt-8">
                 <Column className="align-bottom">
                     <Text className="text-lg font-bold m-0 mr-4"> {product.name} </Text>
+                </Column>
+                <Column align="right">
+                    {/* Buttons are essentially just links within emails */}
+                    <Button href={`${process.env.NEXT_PUBLIC_SERVER_URL}/products/download/${downloadVerificationId}`} className="bg-black text-white px-6 py-4 rounded text-lg">
+                        Download
+                    </Button>
                 </Column>
             </Row>
         </Section>
