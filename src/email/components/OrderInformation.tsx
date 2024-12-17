@@ -57,6 +57,11 @@ export function OrderInformation({
                     </Button>
                 </Column>
             </Row>
+            <Row>
+                <Column>
+                    <Text className="text-gray-500 mb-0"> {product.description} </Text>
+                </Column>
+            </Row>
         </Section>
     </>
 }
