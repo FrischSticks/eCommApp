@@ -5,12 +5,12 @@ import { unstable_cache as nextCache } from "next/cache";
 // For Request Memoization
 import { cache as reactCache } from "react";
 
-// Takes any number of arguments with any params, will return Promise of any type (any function that takes & returns something)
-type Callback = (...args: any[]) => Promise<any>
+// Define a generic type for the callback function
+type Callback<TArgs extends any[], TResult> = (...args: TArgs) => Promise<TResult>;
 
 // Essentially emulates Next's built in Cache Function
-export function cache<T extends Callback>(
-    cb: T, 
+export function cache<TArgs extends any[], TResult>(
+    cb: Callback<TArgs, TResult>, 
     keyParts: string[],
     options: { revalidate?: number | false; tags?: string[] } = {}
 ) {
