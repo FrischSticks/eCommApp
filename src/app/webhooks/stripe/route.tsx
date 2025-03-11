@@ -9,7 +9,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
 
 // npm i resend & react-email (made by same team - work well together!)
 const resend = new Resend(process.env.RESEND_API_KEY as string)
-console.log(process.env.RESEND_API_KEY)
 
 // Called By Stripe - Gives Info from Body
 export async function POST(req: NextRequest) {
