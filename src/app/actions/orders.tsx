@@ -82,6 +82,7 @@ export async function emailOrderHistory(
     );
 
     try {
+        // Emails Won't Send /o Verified Email YOU OWN! (ADD DOMAIN ON RESEND)
         await resend.emails.send({
             from: `Support <${process.env.SENDER_EMAIL}>`,
             to: user.email,
